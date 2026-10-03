@@ -11,6 +11,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlin.time.DurationUnit
+import kotlin.time.toDuration
 
 class ChronometerViewModel : ViewModel() {
 
@@ -76,7 +78,7 @@ class ChronometerViewModel : ViewModel() {
             var lastFrameTime = System.currentTimeMillis()
 
             while (_uiState.value.isRunning) {
-                delay(200L) // Update timer every 200ms (5 FPS UI tick is plenty smooth and light on CPU)
+                delay(200L.toDuration(DurationUnit.MILLISECONDS)) // Update timer every 200ms (5 FPS UI tick is plenty smooth and light on CPU)
                 val currentTime = System.currentTimeMillis()
                 val delta = currentTime - lastFrameTime
                 lastFrameTime = currentTime
