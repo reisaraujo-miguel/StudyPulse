@@ -1,5 +1,7 @@
 package com.reisaraujo_miguel.studypulse.components
 
+import com.reisaraujo_miguel.studypulse.R
+
 /**
  * SessionMode represents the current mode of the study session.
  */
@@ -77,18 +79,18 @@ data class ChronometerUiState(
             } else {
                 when {
                     minutes < studyMilestones[0] ->
-                        "Get off your phone! You just started!"
+                        R.string.msg_study_just_started.toString()
 
                     studyMilestones.size >= 2 && minutes < studyMilestones[1] ->
-                        "Keep on the good work!"
+                        R.string.msg_study_keep_working.toString()
 
                     studyMilestones.size >= 3 && minutes < studyMilestones[2] ->
-                        "You deserve a break :)"
+                        R.string.msg_study_deserve_break.toString()
 
                     studyMilestones.size >= 4 && minutes < studyMilestones[3] ->
-                        "You are on fire 🔥"
+                        R.string.msg_study_on_fire.toString()
 
-                    else -> "We highly recommend you take a break"
+                    else -> R.string.msg_study_take_break.toString()
                 }
             }
         } else {
@@ -97,18 +99,18 @@ data class ChronometerUiState(
             } else {
                 when {
                     minutes < restReminders[0] ->
-                        "Relax and recharge your energy ☕"
+                        R.string.msg_rest_relax.toString()
 
                     restReminders.size >= 2 && minutes < restReminders[1] ->
-                        "Halfway through your rest time!"
+                        R.string.msg_rest_halfway.toString()
 
                     restReminders.size >= 3 && minutes < restReminders[2] ->
-                        "Start wrapping up your rest…"
+                        R.string.msg_rest_wrapping_up.toString()
 
                     restReminders.size >= 4 && minutes < restReminders[3] ->
-                        "Get ready to jump back to study! 📚"
+                        R.string.msg_rest_get_ready.toString()
 
-                    else -> "Rest time complete! Back to work!"
+                    else -> R.string.msg_rest_complete.toString()
                 }
             }
         }

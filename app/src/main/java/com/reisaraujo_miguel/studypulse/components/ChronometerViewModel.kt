@@ -211,7 +211,6 @@ class ChronometerViewModel : ViewModel() {
      * onCleared is called when the ViewModel is cleared.
      */
     override fun onCleared() {
-        super.onCleared()
         timerJob?.cancel()
     }
 }
