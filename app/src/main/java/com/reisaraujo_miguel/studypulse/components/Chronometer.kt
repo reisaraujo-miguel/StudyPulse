@@ -20,7 +20,6 @@ import androidx.compose.material.icons.filled.School
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -43,6 +42,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -50,8 +50,20 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.reisaraujo_miguel.studypulse.R
 import java.util.Locale
 
+/**
+ * ChronometerGaugeScreen is a composable function that displays a gauge representing the
+ * elapsed time in a study session.
+ *
+ * @param modifier The modifier to apply to this layout.
+ * @param contentPadding The padding values to apply to the content.
+ * @param studyMilestones The list of study milestones to display.
+ * @param restReminders The list of rest reminders to display.
+ * @param restAlarmFrequency The frequency of rest alarms.
+ * @param viewModel The view model to use for this screen.
+ */
 @Composable
 fun ChronometerGaugeScreen(
     modifier: Modifier = Modifier,
@@ -71,16 +83,22 @@ fun ChronometerGaugeScreen(
     }
 
     LaunchedEffect(viewModel, audioVibrationManager) {
-        viewModel.events.collect { event ->
+        viewModel.events.collect {
+            /**
+             * @param event The event to handle.
+             */
+                event ->
             when (event) {
-                is ChronometerEvent.MilestoneAlert -> audioVibrationManager.triggerAlert(event.isAlarm)
+                is ChronometerEvent.MilestoneAlert ->
+                    audioVibrationManager.triggerAlert(event.isAlarm)
+
                 ChronometerEvent.StartAlarm -> audioVibrationManager.startContinuousAlarm()
                 ChronometerEvent.StopAlarm -> audioVibrationManager.stopContinuousAlarm()
             }
         }
     }
 
-    DisposableEffect(Unit) {
+    DisposableEffect(audioVibrationManager) {
         onDispose {
             audioVibrationManager.stopContinuousAlarm()
         }
@@ -99,24 +117,34 @@ fun ChronometerGaugeScreen(
         lerp(Color(0xFF0288D1), Color(0xFF7C4DFF), gaugeProgress)
     }
 
-    val backgroundColor =
-        if (uiState.isRunning) currentColor.copy(alpha = 0.10f) else MaterialTheme.colorScheme.background
+    val backgroundColor = if (uiState.isRunning) {
+        currentColor.copy(alpha = 0.10f)
+    } else {
+        MaterialTheme.colorScheme.background
+    }
 
     val milestoneMessage = uiState.milestoneMessage(studyMilestones, restReminders)
 
     if (uiState.showAlarmDialog) {
         AlertDialog(
             onDismissRequest = { viewModel.dismissAlarmDialog() },
-            title = { Text("Time to Study! 📚") },
-            text = { Text("You've rested for ${uiState.currentMinutes()} minutes. Ready to get back to work?") },
+            title = { Text(stringResource(R.string.alarm_dialog_title)) },
+            text = {
+                Text(
+                    stringResource(
+                        R.string.alarm_dialog_message,
+                        uiState.currentMinutes()
+                    )
+                )
+            },
             confirmButton = {
                 Button(onClick = { viewModel.switchToMode(SessionMode.STUDY) }) {
-                    Text("Back to Study")
+                    Text(stringResource(R.string.alarm_dialog_confirm))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { viewModel.dismissAlarmDialog() }) {
-                    Text("Ignore (+5 min)")
+                    Text(stringResource(R.string.alarm_dialog_dismiss))
                 }
             }
         )
@@ -130,8 +158,7 @@ fun ChronometerGaugeScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(contentPadding)
-                .padding(24.dp)
-                .padding(bottom = 24.dp),
+                .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceBetween
         ) {
@@ -147,7 +174,11 @@ fun ChronometerGaugeScreen(
                 progress = gaugeProgress,
                 currentColor = currentColor,
                 elapsedMillis = uiState.currentSessionMillis,
-                modeLabel = if (uiState.currentMode == SessionMode.STUDY) "Study" else "Rest"
+                modeLabel = if (uiState.currentMode == SessionMode.STUDY) {
+                    stringResource(R.string.mode_study)
+                } else {
+                    stringResource(R.string.mode_rest)
+                }
             )
 
             Text(
@@ -163,14 +194,17 @@ fun ChronometerGaugeScreen(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.padding(bottom = 16.dp)
             ) {
-                if (!uiState.isRunning && uiState.totalStudyMillis == 0L && uiState.totalRestMillis == 0L) {
+                if (!uiState.isRunning &&
+                    uiState.totalStudyMillis == 0L &&
+                    uiState.totalRestMillis == 0L
+                ) {
                     Button(
                         onClick = { viewModel.startStudy() },
                         modifier = Modifier.width(150.dp)
                     ) {
                         Icon(Icons.Default.PlayArrow, contentDescription = null)
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Start Study")
+                        Text(stringResource(R.string.action_start_study))
                     }
                 } else if (uiState.currentMode == SessionMode.STUDY) {
                     Button(
@@ -180,17 +214,19 @@ fun ChronometerGaugeScreen(
                     ) {
                         Icon(Icons.Default.Bedtime, contentDescription = null)
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Take a Rest")
+                        Text(stringResource(R.string.action_take_rest))
                     }
                 } else {
                     Button(
                         onClick = { viewModel.switchToMode(SessionMode.STUDY) },
-                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary
+                        ),
                         modifier = Modifier.width(150.dp)
                     ) {
                         Icon(Icons.Default.School, contentDescription = null)
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Back to Study")
+                        Text(stringResource(R.string.action_back_to_study))
                     }
                 }
 
@@ -200,13 +236,22 @@ fun ChronometerGaugeScreen(
                 ) {
                     Icon(Icons.Default.Refresh, contentDescription = null)
                     Spacer(modifier = Modifier.width(6.dp))
-                    Text("Reset")
+                    Text(stringResource(R.string.action_reset))
                 }
             }
         }
     }
 }
 
+/**
+ * DashboardHeader is a composable function that displays a header for the dashboard.
+ *
+ * @param totalRealMillis The total real time in milliseconds.
+ * @param totalStudyMillis The total study time in milliseconds.
+ * @param totalRestMillis The total rest time in milliseconds.
+ * @param chunksCount The number of chunks.
+ * @param color The background color.
+ */
 @Composable
 fun DashboardHeader(
     totalRealMillis: Long,
@@ -231,7 +276,7 @@ fun DashboardHeader(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Total Real Time",
+                    text = stringResource(R.string.label_total_real_time),
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -245,7 +290,6 @@ fun DashboardHeader(
 
             HorizontalDivider(
                 modifier = Modifier.fillMaxWidth(),
-                thickness = DividerDefaults.Thickness,
                 color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
             )
 
@@ -253,14 +297,20 @@ fun DashboardHeader(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                MetricItem("Study Time", formatTime(totalStudyMillis))
-                MetricItem("Rest Time", formatTime(totalRestMillis))
-                MetricItem("Chunks", "$chunksCount")
+                MetricItem(stringResource(R.string.label_study_time), formatTime(totalStudyMillis))
+                MetricItem(stringResource(R.string.label_rest_time), formatTime(totalRestMillis))
+                MetricItem(stringResource(R.string.label_chunks), "$chunksCount")
             }
         }
     }
 }
 
+/**
+ * MetricItem is a composable function that displays a metric item.
+ *
+ * @param label The label for the metric.
+ * @param value The value for the metric.
+ */
 @Composable
 fun MetricItem(label: String, value: String) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -277,6 +327,12 @@ fun MetricItem(label: String, value: String) {
     }
 }
 
+/**
+ * formatTime formats the given time in milliseconds to a string in the format "mm:ss" or
+ * "hh:mm:ss".
+ *
+ * @param millis The time in milliseconds to format.
+ */
 fun formatTime(millis: Long): String {
     val totalSeconds = millis / 1000
     val hours = totalSeconds / 3600
@@ -290,6 +346,17 @@ fun formatTime(millis: Long): String {
     }
 }
 
+/**
+ * ChronometerGauge is a composable function that displays a gauge representing the elapsed time.
+ *
+ * @param progress The progress of the gauge.
+ * @param currentColor The color of the current progress.
+ * @param elapsedMillis The elapsed time in milliseconds.
+ * @param modeLabel The label for the mode.
+ * @param modifier The modifier to apply to this layout.
+ * @param trackColor The color of the track.
+ * @param strokeWidth The width of the stroke.
+ */
 @Composable
 fun ChronometerGauge(
     progress: Float,
@@ -297,7 +364,7 @@ fun ChronometerGauge(
     elapsedMillis: Long,
     modeLabel: String,
     modifier: Modifier = Modifier,
-    trackColor: Color = Color(0xFFE0E0E0),
+    trackColor: Color = MaterialTheme.colorScheme.outlineVariant,
     strokeWidth: Dp = 20.dp
 ) {
     val totalSeconds = elapsedMillis / 1000
@@ -313,9 +380,9 @@ fun ChronometerGauge(
     ) {
         Canvas(modifier = Modifier.fillMaxSize()) {
             val strokePx = strokeWidth.toPx()
-            val diameter = size.width - strokePx
+            val diameter = minOf(size.width - strokePx, (size.height - strokePx / 2f) * 2f)
             val arcSize = Size(diameter, diameter)
-            val topLeft = Offset(strokePx / 2f, strokePx / 2f)
+            val topLeft = Offset((size.width - diameter) / 2f, strokePx / 2f)
             val strokeStyle = Stroke(width = strokePx, cap = StrokeCap.Round)
 
             drawArc(
@@ -358,6 +425,9 @@ fun ChronometerGauge(
     }
 }
 
+/**
+ * ChronometerPreview is a preview of the ChronometerGaugeScreen composable.
+ */
 @Preview
 @Composable
 fun ChronometerPreview() {

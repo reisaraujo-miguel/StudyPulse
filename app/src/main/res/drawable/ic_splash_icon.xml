@@ -1,9 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?><!--suppress ALL -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
+
+    <!-- Soft background circle plate -->
+    <path android:pathData="M 54,6 A 48,48 0 1,0 54,102 A 48,48 0 1,0 54,6 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:endX="90"
+                android:endY="90"
+                android:startX="18"
+                android:startY="18"
+                android:type="linear">
+                <item
+                    android:color="#FF1E1B4B"
+                    android:offset="0.0" />
+                <item
+                    android:color="#FF0F172A"
+                    android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Outer ring border -->
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M 54,6 A 48,48 0 1,0 54,102 A 48,48 0 1,0 54,6 Z"
+        android:strokeWidth="1.5"
+        android:strokeColor="#30818CF8" />
 
     <!-- Skullcap Base -->
     <path

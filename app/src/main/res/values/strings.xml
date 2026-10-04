@@ -1,3 +1,27 @@
 <resources>
     <string name="app_name">StudyPulse</string>
+    <string name="alarm_dialog_title">Time to Study! 📚</string>
+    <string name="alarm_dialog_message">You’ve rested for %1$d minutes. Ready to get back to work?</string>
+    <string name="alarm_dialog_confirm">Back to Study</string>
+    <string name="alarm_dialog_dismiss">Ignore (+5 min)</string>
+    <string name="label_total_real_time">Total Real Time</string>
+    <string name="label_study_time">Study Time</string>
+    <string name="label_rest_time">Rest Time</string>
+    <string name="label_chunks">Chunks</string>
+    <string name="action_start_study">Start Study</string>
+    <string name="action_take_rest">Take a Rest</string>
+    <string name="action_back_to_study">Back to Study</string>
+    <string name="action_reset">Reset</string>
+    <string name="mode_study">Study</string>
+    <string name="mode_rest">Rest</string>
+    <string name="msg_study_just_started">Get off your phone! You just started!</string>
+    <string name="msg_study_keep_working">Keep on the good work!</string>
+    <string name="msg_study_deserve_break">You deserve a break :)</string>
+    <string name="msg_study_on_fire">You are on fire 🔥</string>
+    <string name="msg_study_take_break">We highly recommend you take a break</string>
+    <string name="msg_rest_relax">Relax and recharge your energy ☕</string>
+    <string name="msg_rest_halfway">Halfway through your rest time!</string>
+    <string name="msg_rest_wrapping_up">Start wrapping up your rest…</string>
+    <string name="msg_rest_get_ready">Get ready to jump back to study! 📚</string>
+    <string name="msg_rest_complete">Rest time complete! Back to work!</string>
 </resources>

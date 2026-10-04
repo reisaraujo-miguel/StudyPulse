@@ -7,10 +7,9 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.setMain
+import org.hamcrest.CoreMatchers.`is`
+import org.hamcrest.MatcherAssert.assertThat
 import org.junit.After
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 
@@ -34,32 +33,32 @@ class ChronometerViewModelTest {
     @Test
     fun initialState_isCorrect() {
         val state = viewModel.uiState.value
-        assertEquals(SessionMode.STUDY, state.currentMode)
-        assertFalse(state.isRunning)
-        assertEquals(0L, state.totalStudyMillis)
-        assertEquals(0L, state.totalRestMillis)
-        assertEquals(0L, state.currentSessionMillis)
-        assertEquals(0, state.chunksCount)
+        assertThat(state.currentMode, `is`(SessionMode.STUDY))
+        assertThat(state.isRunning, `is`(false))
+        assertThat(state.totalStudyMillis, `is`(0L))
+        assertThat(state.totalRestMillis, `is`(0L))
+        assertThat(state.currentSessionMillis, `is`(0L))
+        assertThat(state.chunksCount, `is`(0))
     }
 
     @Test
     fun startStudy_updatesState() {
         viewModel.startStudy()
         val state = viewModel.uiState.value
-        assertTrue(state.isRunning)
-        assertEquals(1, state.chunksCount)
+        assertThat(state.isRunning, `is`(true))
+        assertThat(state.chunksCount, `is`(1))
     }
 
     @Test
     fun switchToMode_incrementsChunksForStudy() {
         viewModel.startStudy()
         viewModel.switchToMode(SessionMode.REST)
-        assertEquals(SessionMode.REST, viewModel.uiState.value.currentMode)
-        assertEquals(1, viewModel.uiState.value.chunksCount)
+        assertThat(viewModel.uiState.value.currentMode, `is`(SessionMode.REST))
+        assertThat(viewModel.uiState.value.chunksCount, `is`(1))
 
         viewModel.switchToMode(SessionMode.STUDY)
-        assertEquals(SessionMode.STUDY, viewModel.uiState.value.currentMode)
-        assertEquals(2, viewModel.uiState.value.chunksCount)
+        assertThat(viewModel.uiState.value.currentMode, `is`(SessionMode.STUDY))
+        assertThat(viewModel.uiState.value.chunksCount, `is`(2))
     }
 
     @Test
@@ -69,11 +68,11 @@ class ChronometerViewModelTest {
         viewModel.reset()
 
         val state = viewModel.uiState.value
-        assertEquals(SessionMode.STUDY, state.currentMode)
-        assertFalse(state.isRunning)
-        assertEquals(0L, state.totalStudyMillis)
-        assertEquals(0L, state.totalRestMillis)
-        assertEquals(0, state.chunksCount)
+        assertThat(state.currentMode, `is`(SessionMode.STUDY))
+        assertThat(state.isRunning, `is`(false))
+        assertThat(state.totalStudyMillis, `is`(0L))
+        assertThat(state.totalRestMillis, `is`(0L))
+        assertThat(state.chunksCount, `is`(0))
     }
 
     @Test
@@ -83,6 +82,42 @@ class ChronometerViewModelTest {
         val shortRestReminders = listOf(1, 2)
 
         val studyMsg = state.milestoneMessage(shortStudyMilestones, shortRestReminders)
-        assertEquals("", studyMsg)
+        assertThat(studyMsg, `is`(""))
+    }
+
+    @Test
+    fun onTimerTick_accumulatesStudyTimeInStudyMode() {
+        viewModel.startStudy()
+        viewModel.onTimerTick(1000L)
+
+        val state = viewModel.uiState.value
+        assertThat(state.currentSessionMillis, `is`(1000L))
+        assertThat(state.totalStudyMillis, `is`(1000L))
+        assertThat(state.totalRestMillis, `is`(0L))
+    }
+
+    @Test
+    fun onTimerTick_accumulatesRestTimeInRestMode() {
+        viewModel.startStudy()
+        viewModel.switchToMode(SessionMode.REST)
+        viewModel.onTimerTick(2000L)
+
+        val state = viewModel.uiState.value
+        assertThat(state.currentSessionMillis, `is`(2000L))
+        assertThat(state.totalStudyMillis, `is`(0L))
+        assertThat(state.totalRestMillis, `is`(2000L))
+    }
+
+    @Test
+    fun dismissAlarmDialog_hidesDialog() {
+        viewModel.dismissAlarmDialog()
+        assertThat(viewModel.uiState.value.showAlarmDialog, `is`(false))
+    }
+
+    @Test
+    fun milestoneMessage_handlesEmptyMilestonesGracefully() {
+        val state = viewModel.uiState.value.copy(currentSessionMillis = 60_000L)
+        val msg = state.milestoneMessage(emptyList(), emptyList())
+        assertThat(msg, `is`("Keep on studying!"))
     }
 }
